@@ -9,5 +9,6 @@ import { ArticleEntity } from './entity/article.entity';
   imports: [OpenNewsModule, TypeOrmModule.forFeature([ArticleEntity])],
   providers: [NewsService],
   controllers: [NewsController],
+  exports: [NewsService],
 })
 export class NewsModule {}

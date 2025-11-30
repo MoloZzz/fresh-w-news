@@ -7,11 +7,12 @@ import {
   MoreThan,
   LessThan,
   Between,
+  DeepPartial,
 } from 'typeorm';
 import { OpenNewsService } from 'src/integrations/open-news/open-news.service';
 import { ArticleEntity } from './entity/article.entity';
 import { ConfigService } from '@nestjs/config';
-import { FeedOptions } from './interface/feed.interface';
+import { FeedOptionsQuery } from './dto/feed-options.query';
 
 @Injectable()
 export class NewsService {
@@ -24,10 +25,7 @@ export class NewsService {
     private readonly articlesRepository: Repository<ArticleEntity>,
     private readonly configService: ConfigService,
   ) {
-    this.country = this.configService.get<string>(
-      'NEWS_DEFAULT_COUNTRY',
-      'ukr',
-    );
+    this.country = this.configService.get<string>('NEWS_DEFAULT_COUNTRY', 'ua');
   }
 
   async syncLatestNews(): Promise<void> {
@@ -45,25 +43,25 @@ export class NewsService {
 
       if (exists) continue;
 
-      // const entity = this.articlesRepository.create({
-      //   externalId: article.url,
-      //   title: article.title,
-      //   description: article.description,
-      //   url: article.url,
-      //   urlToImage: article.urlToImage,
-      //   author: article.author,
-      //   sourceName: article.source?.name,
-      //   publishedAt: new Date(article.publishedAt),
-      //   content: article.content,
-      // });
+      const entity = this.articlesRepository.create({
+        externalId: article.url,
+        title: article.title,
+        description: article.description,
+        url: article.url,
+        urlToImage: article.urlToImage,
+        author: article.author,
+        sourceName: article.source?.name,
+        publishedAt: new Date(article.publishedAt),
+        content: article.content,
+      } as DeepPartial<ArticleEntity>);
 
-      // await this.articlesRepository.save(entity);
+      await this.articlesRepository.save(entity);
     }
 
     this.logger.log(`Sync finished. Imported ${articles.length} articles.`);
   }
 
-  async getFeed(options: FeedOptions) {
+  async getFeed(options: FeedOptionsQuery) {
     const {
       search,
       author,
