@@ -54,11 +54,13 @@ export class FeedOptionsQuery {
   @IsOptional()
   @IsInt()
   @IsPositive()
+  @Type(() => Number)
   limit?: number;
 
   @ApiProperty({ required: false, description: 'Offset for pagination' })
   @IsOptional()
   @IsInt()
   @IsPositive()
+  @Type(() => Number)
   offset?: number;
 }

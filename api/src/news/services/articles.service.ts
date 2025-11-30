@@ -2,21 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
-  FindOptionsWhere,
-  ILike,
-  MoreThan,
-  LessThan,
-  Between,
   DeepPartial,
 } from 'typeorm';
 import { OpenNewsService } from 'src/integrations/open-news/open-news.service';
-import { ArticleEntity } from './entity/article.entity';
+import { ArticleEntity } from '../common/entity/article.entity';
 import { ConfigService } from '@nestjs/config';
-import { FeedOptionsQuery } from './dto/feed-options.query';
 
 @Injectable()
-export class NewsService {
-  private readonly logger = new Logger(NewsService.name);
+export class ArticlesService {
+  private readonly logger = new Logger(ArticlesService.name);
   private readonly country: string;
 
   constructor(
@@ -30,7 +24,7 @@ export class NewsService {
 
   async syncLatestNews(): Promise<void> {
     this.logger.log('Syncing latest news from external API...');
-
+    
     const response = await this.newsApi.fetchTopHeadlines({
       country: this.country,
     });
@@ -59,52 +53,5 @@ export class NewsService {
     }
 
     this.logger.log(`Sync finished. Imported ${articles.length} articles.`);
-  }
-
-  async getFeed(options: FeedOptionsQuery) {
-    const {
-      search,
-      author,
-      sourceName,
-      before,
-      after,
-      limit = 20,
-      offset = 0,
-    } = options;
-
-    const where: FindOptionsWhere<ArticleEntity> = {};
-
-    if (search) {
-      where.title = ILike(`%${search}%`);
-    }
-
-    if (author) {
-      where.author = ILike(`%${author}%`);
-    }
-
-    if (sourceName) {
-      where.sourceName = ILike(`%${sourceName}%`);
-    }
-
-    if (after && before) {
-      where.publishedAt = Between(after, before);
-    } else if (before) {
-      where.publishedAt = LessThan(before);
-    } else if (after) {
-      where.publishedAt = MoreThan(after);
-    }
-
-    const [items, total] = await this.articlesRepository.findAndCount({
-      where,
-      take: limit,
-      skip: offset,
-      order: { publishedAt: 'DESC' },
-    });
-
-    return { items, total };
-  }
-
-  async getNewsById(id: string) {
-    return this.articlesRepository.findOneBy({ id });
   }
 }

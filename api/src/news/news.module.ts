@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
-import { NewsService } from './news.service';
-import { NewsController } from './news.controller';
+import { ArticlesService } from './services/articles.service';
+import { NewsController } from './controllers/news.controller';
 import { OpenNewsModule } from 'src/integrations/open-news/open-news.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ArticleEntity } from './entity/article.entity';
+import { ArticleEntity } from './common/entity/article.entity';
+import { NewsService } from './services/news.service';
+import { RecommendationModule } from 'src/recommendation/recommendation.module';
 
 @Module({
-  imports: [OpenNewsModule, TypeOrmModule.forFeature([ArticleEntity])],
-  providers: [NewsService],
   controllers: [NewsController],
-  exports: [NewsService],
+  imports: [
+    OpenNewsModule,
+    TypeOrmModule.forFeature([ArticleEntity]),
+    RecommendationModule,
+  ],
+  providers: [ArticlesService, NewsService],
+  exports: [ArticlesService, NewsService],
 })
 export class NewsModule {}

@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { CronModule } from './cron/cron.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CronModule } from './cron/cron.module';
     UserModule,
     OpenNewsModule,
     CronModule,
+    RecommendationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
