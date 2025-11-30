@@ -3,5 +3,6 @@ import { OpenNewsService } from './open-news.service';
 
 @Module({
   providers: [OpenNewsService],
+  exports: [OpenNewsService],
 })
 export class OpenNewsModule {}

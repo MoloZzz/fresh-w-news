@@ -18,10 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migration:generate": "npm run build && npx typeorm migration:generate dist/database/migrations -d dist/database/datasource.js",
-    "migration:create": "npm run build && npx typeorm migration:create dist/database/migrations",
-    "migration:run": "npm run build && npx typeorm migration:run -d dist/database/datasource.js",
-    "migration:revert": "npm run build && npx typeorm migration:revert -d dist/database/datasource.js"
+    "migration:generate": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:generate ./src/database/migrations/migration -d ./src/database/datasource.ts",
+    "migration:create": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:create ./src/database/migrations/migration",
+    "migration:run": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:run -d ./src/database/datasource.ts",
+    "migration:revert": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:revert -d ./src/database/datasource.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -29,6 +29,8 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.3",
+    "@nestjs/typeorm": "^11.0.0",
+    "axios": "^1.13.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "dotenv": "^17.2.3",
