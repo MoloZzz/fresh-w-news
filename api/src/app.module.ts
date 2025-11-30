@@ -9,7 +9,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { CronModule } from './cron/cron.module';
 import { RecommendationModule } from './recommendation/recommendation.module';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
