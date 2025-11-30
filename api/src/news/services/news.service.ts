@@ -8,9 +8,11 @@ import {
   LessThan,
   MoreThan,
   Repository,
+  SelectQueryBuilder,
 } from 'typeorm';
 import { ArticleEntity } from '../common/entity/article.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserPreferences } from 'src/recommendation/dto/user-preferences.dto';
 
 @Injectable()
 export class NewsService {
@@ -21,72 +23,24 @@ export class NewsService {
   ) {}
 
   async getFeed(options: FeedOptionsQuery, userId?: string) {
-    if (!userId) {
-      return this.getPublicFeed(options);
-    }
-    return this.getPersonalizedFeed(options, userId);
+    const prefs = userId ? await this.recs.getUserPreferences(userId) : null;
+    return this.buildFeedQuery(options, prefs);
   }
 
-  private async getPersonalizedFeed(options: FeedOptionsQuery, userId: string) {
-    const {
-      search,
-      author,
-      sourceName,
-      before,
-      after,
-      limit = 20,
-      offset = 0,
-    } = options;
-
-    const prefs = await this.recs.getUserPreferences(userId);
-
+  private async buildFeedQuery(
+    options: FeedOptionsQuery,
+    prefs?: UserPreferences | null,
+  ) {
     const qb = this.articlesRepo
       .createQueryBuilder('a')
       .orderBy('a.publishedAt', 'DESC')
-      .take(limit)
-      .skip(offset);
+      .take(options.limit ?? 20)
+      .skip(options.offset ?? 0);
 
-    if (search) {
-      qb.andWhere('a.title ILIKE :search', { search: `%${search}%` });
-    }
+    this.applyBaseFilters(qb, options);
 
-    if (author) {
-      qb.andWhere('a.author ILIKE :author', { author: `%${author}%` });
-    }
-
-    if (sourceName) {
-      qb.andWhere('a.sourceName ILIKE :sourceName', {
-        sourceName: `%${sourceName}%`,
-      });
-    }
-
-    if (after && before) {
-      qb.andWhere('a.publishedAt BETWEEN :after AND :before', {
-        after,
-        before,
-      });
-    } else if (after) {
-      qb.andWhere('a.publishedAt > :after', { after });
-    } else if (before) {
-      qb.andWhere('a.publishedAt < :before', { before });
-    }
-
-    if (prefs.categories && prefs.categories.length > 0) {
-      qb.andWhere('a.category IN (:...categories)', {
-        categories: prefs.categories,
-      });
-    }
-
-    if (prefs.sources && prefs.sources.length > 0) {
-      qb.andWhere('a.sourceName IN (:...sources)', {
-        sources: prefs.sources,
-      });
-    }
-
-    if (prefs.hiddenKeywords && prefs.hiddenKeywords.length > 0) {
-      for (const keyword of prefs.hiddenKeywords) {
-        qb.andWhere('a.title NOT ILIKE :kw', { kw: `%${keyword}%` });
-      }
+    if (prefs) {
+      this.applyUserPreferences(qb, prefs);
     }
 
     const [items, total] = await qb.getManyAndCount();
@@ -94,47 +48,63 @@ export class NewsService {
     return { items, total };
   }
 
-  private async getPublicFeed(options: FeedOptionsQuery) {
-    const {
-      search,
-      author,
-      sourceName,
-      before,
-      after,
-      limit = 20,
-      offset = 0,
-    } = options;
-
-    const where: FindOptionsWhere<ArticleEntity> = {};
-
-    if (search) {
-      where.title = ILike(`%${search}%`);
+  private applyBaseFilters(
+    qb: SelectQueryBuilder<ArticleEntity>,
+    opts: FeedOptionsQuery,
+  ) {
+    if (opts.search) {
+      qb.andWhere('a.title ILIKE :search', { search: `%${opts.search}%` });
     }
 
-    if (author) {
-      where.author = ILike(`%${author}%`);
+    if (opts.author) {
+      qb.andWhere('a.author ILIKE :author', { author: `%${opts.author}%` });
     }
 
-    if (sourceName) {
-      where.sourceName = ILike(`%${sourceName}%`);
+    if (opts.sourceName) {
+      qb.andWhere('a.sourceName ILIKE :sourceName', {
+        sourceName: `%${opts.sourceName}%`,
+      });
     }
 
-    if (after && before) {
-      where.publishedAt = Between(after, before);
-    } else if (before) {
-      where.publishedAt = LessThan(before);
-    } else if (after) {
-      where.publishedAt = MoreThan(after);
+    if (opts.after && opts.before) {
+      qb.andWhere('a.publishedAt BETWEEN :after AND :before', {
+        after: opts.after,
+        before: opts.before,
+      });
+    } else if (opts.after) {
+      qb.andWhere('a.publishedAt > :after', { after: opts.after });
+    } else if (opts.before) {
+      qb.andWhere('a.publishedAt < :before', { before: opts.before });
+    }
+  }
+
+  private applyUserPreferences(
+    qb: SelectQueryBuilder<ArticleEntity>,
+    prefs: UserPreferences,
+  ) {
+    if (prefs.categories?.length) {
+      qb.andWhere('a.category IN (:...categories)', {
+        categories: prefs.categories,
+      });
     }
 
-    const [items, total] = await this.articlesRepo.findAndCount({
-      where,
-      take: limit,
-      skip: offset,
-      order: { publishedAt: 'DESC' },
-    });
+    if (prefs.sources?.length) {
+      qb.andWhere('a.sourceName IN (:...sources)', {
+        sources: prefs.sources,
+      });
+    }
 
-    return { items, total };
+    if (prefs.hiddenKeywords?.length) {
+      qb.andWhere(
+        prefs.hiddenKeywords
+          .map((_, i) => `a.title NOT ILIKE :kw${i}`)
+          .join(' AND '),
+        prefs.hiddenKeywords.reduce(
+          (acc, kw, i) => ({ ...acc, [`kw${i}`]: `%${kw}%` }),
+          {},
+        ),
+      );
+    }
   }
 
   async getArticleById(id: string) {

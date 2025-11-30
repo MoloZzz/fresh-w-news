@@ -3,6 +3,7 @@ import { UserRecommendationsEntity } from './entity/user-recommendations.entity'
 import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from 'src/news/common/entity/article.entity';
+import { UserPreferences } from './dto/user-preferences.dto';
 
 @Injectable()
 export class RecommendationsService {
@@ -11,12 +12,12 @@ export class RecommendationsService {
     private readonly recRepo: Repository<UserRecommendationsEntity>,
   ) {}
 
-  async getUserPreferences(userId: string) {
+  async getUserPreferences(userId: string): Promise<UserPreferences | null> {
     const record = await this.recRepo.findOne({
       where: { userId },
     });
     if (!record) {
-      return {};
+      return null;
     }
 
     return {
