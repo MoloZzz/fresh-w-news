@@ -12,6 +12,7 @@ async function bootstrap() {
     .setTitle('Fresh W News API')
     .setDescription('API for fresh news articles and user management')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

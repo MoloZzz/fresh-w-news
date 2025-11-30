@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IdParamDto } from 'src/common/dtos';
 import { FeedOptionsQuery } from '../common/dto/feed-options.query';
@@ -10,8 +10,9 @@ export class NewsController {
   constructor(private readonly service: NewsService) {}
 
   @Get('feed')
-  async fetchNews(@Query() query: FeedOptionsQuery) {
-    return this.service.getFeed(query);
+  async fetchNews(@Query() query: FeedOptionsQuery, @Req() req: any) {
+    const user = req.user || null;
+    return this.service.getFeed(query, user);
   }
 
   @Get('/article/:id')
