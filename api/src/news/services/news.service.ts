@@ -15,9 +15,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class NewsService {
   constructor(
-    private readonly recommendationsService: RecommendationsService,
+    private readonly recs: RecommendationsService,
     @InjectRepository(ArticleEntity)
-    private readonly articlesRepository: Repository<ArticleEntity>,
+    private readonly articlesRepo: Repository<ArticleEntity>,
   ) {}
 
   async getFeed(options: FeedOptionsQuery, userId?: string) {
@@ -38,9 +38,9 @@ export class NewsService {
       offset = 0,
     } = options;
 
-    const prefs = await this.recommendationsService.getUserPreferences(userId);
+    const prefs = await this.recs.getUserPreferences(userId);
 
-    const qb = this.articlesRepository
+    const qb = this.articlesRepo
       .createQueryBuilder('a')
       .orderBy('a.publishedAt', 'DESC')
       .take(limit)
@@ -127,7 +127,7 @@ export class NewsService {
       where.publishedAt = MoreThan(after);
     }
 
-    const [items, total] = await this.articlesRepository.findAndCount({
+    const [items, total] = await this.articlesRepo.findAndCount({
       where,
       take: limit,
       skip: offset,
@@ -138,6 +138,6 @@ export class NewsService {
   }
 
   async getArticleById(id: string) {
-    return this.articlesRepository.findOneBy({ id });
+    return this.articlesRepo.findOneBy({ id });
   }
 }

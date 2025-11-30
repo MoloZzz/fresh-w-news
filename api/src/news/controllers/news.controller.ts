@@ -7,15 +7,15 @@ import { NewsService } from '../services/news.service';
 @ApiTags('News API')
 @Controller('news')
 export class NewsController {
-  constructor(private readonly newsService: NewsService) {}
+  constructor(private readonly service: NewsService) {}
 
   @Get('feed')
   async fetchNews(@Query() query: FeedOptionsQuery) {
-    return this.newsService.getFeed(query);
+    return this.service.getFeed(query);
   }
 
   @Get('/article/:id')
   async getNewsById(@Param() param: IdParamDto) {
-    return this.newsService.getArticleById(param.id);
+    return this.service.getArticleById(param.id);
   }
 }

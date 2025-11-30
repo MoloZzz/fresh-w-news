@@ -15,7 +15,7 @@ export class ArticlesService {
   constructor(
     private readonly newsApi: OpenNewsService,
     @InjectRepository(ArticleEntity)
-    private readonly articlesRepository: Repository<ArticleEntity>,
+    private readonly articlesRepo: Repository<ArticleEntity>,
     private readonly configService: ConfigService,
   ) {
     this.country = this.configService.get<string>('NEWS_DEFAULT_COUNTRY', 'ua');
@@ -27,7 +27,7 @@ export class ArticlesService {
     const categories = Object.values(NewsCategoriesEnum);
     const allNewArticles: DeepPartial<ArticleEntity>[] = [];
 
-    const existing = await this.articlesRepository.find({
+    const existing = await this.articlesRepo.find({
       select: ['externalId'],
     });
     const existingIds = new Set(existing.map((a) => a.externalId));
@@ -63,7 +63,7 @@ export class ArticlesService {
     }
 
     if (allNewArticles.length > 0) {
-      await this.articlesRepository.save(allNewArticles);
+      await this.articlesRepo.save(allNewArticles);
     }
 
     this.logger.log(
