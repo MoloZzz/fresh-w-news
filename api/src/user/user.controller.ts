@@ -4,6 +4,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { OptionalJwtAuthGuard } from './guard/optional-jwt.guard';
 
 @ApiTags('User API')
 @Controller('user')
@@ -20,9 +21,9 @@ export class UserController {
     return this.userService.login(dto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('me')
   async getMe(@Req() req: any) {
-    return req.user;
+    return req.user || { username: 'Guest' };
   }
 }
