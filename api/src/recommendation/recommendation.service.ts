@@ -15,10 +15,14 @@ export class RecommendationsService {
     const record = await this.recRepo.findOne({
       where: { userId },
     });
-    if(!record){
+    if (!record) {
       return {};
     }
 
-    return { categories: record.favorite_categories, sources: record.favorite_sources, hiddenKeywords: record.hidden_keywords };
+    return {
+      categories: record.favorite_categories,
+      sources: record.favorite_sources,
+      hiddenKeywords: record.hidden_keywords,
+    };
   }
 }

@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { NewsCategoriesEnum } from '../enums/news-categories.enum';
 
 @Entity('news_articles')
 export class ArticleEntity {
@@ -32,4 +33,7 @@ export class ArticleEntity {
 
   @Column({ type: 'text', nullable: true })
   content: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  category: NewsCategoriesEnum;
 }
