@@ -60,7 +60,7 @@ describe('GET /news/feed (integration)', () => {
     expect(res.status).toBe(200);
     expect(res.body.items.length).toBe(1);
     expect(res.body.items[0].title).toBe('Tech breakthrough');
-    expect(recsMock.getUserPreferences).not.toHaveBeenCalled(); // бо не авторизовано
+    expect(recsMock.getUserPreferences).not.toHaveBeenCalled(); // cuz not logged in
   });
 
   afterAll(async () => {
