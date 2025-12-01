@@ -22,7 +22,7 @@
     "migration:create": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:create ./src/database/migrations/migration",
     "migration:run": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:run -d ./src/database/datasource.ts",
     "migration:revert": "npm run build && npx ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:revert -d ./src/database/datasource.ts",
-    "migration:run:prod": "node dist/database/datasource-migrations-run.js"
+    "migration:run:prod": "npx ts-node -r tsconfig-paths/register src/database/datasource.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
