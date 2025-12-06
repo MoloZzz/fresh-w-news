@@ -8,7 +8,7 @@ export class CronService {
   private readonly logger = new Logger(CronService.name);
   constructor(private readonly articlesService: ArticlesService) {}
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_4_HOURS)
   async syncNewsCron() {
     this.logger.log('Running cron job: syncLatestNews');
 
